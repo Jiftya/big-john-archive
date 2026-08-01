@@ -98,6 +98,22 @@ body{
 .exhibit .caption .label{text-transform:uppercase; letter-spacing:1px; color:var(--ink); font-weight:700; display:block; margin-bottom:3px;}
 .article-body{font-size:1.05rem; line-height:1.75;}
 .article-body p{margin:0 0 1em;}
+.article-body h2{
+  font-family:'Special Elite','Courier New',monospace; font-size:1.3rem; color:var(--ink);
+  margin:0.6em 0 0.5em; border-bottom:1px solid var(--ink); padding-bottom:6px;
+}
+.article-body h3{
+  font-family:'Special Elite','Courier New',monospace; font-size:1.05rem; color:var(--ink);
+  margin:0.6em 0 0.4em; border-bottom:1px dashed var(--line); padding-bottom:4px;
+}
+.article-body h4{
+  font-family:'Courier Prime',monospace; font-size:0.82rem; letter-spacing:1px; text-transform:uppercase;
+  color:var(--ink-soft); margin:0.6em 0 0.3em;
+}
+.article-body code{
+  background:var(--paper); border:1px solid var(--line); padding:1px 5px;
+  font-family:'Courier Prime',monospace; font-size:0.9em;
+}
 
 .loading{font-family:'Courier Prime',monospace; color:var(--ink-soft); padding:40px; text-align:center;}
 </style>
@@ -118,6 +134,43 @@ function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str || '';
   return d.innerHTML;
+}
+function inlineMarkdown(text){
+  let html = text;
+  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+  html = html.replace(/(^|[^*])\*(?!\*)(.+?)\*(?!\*)/g, '$1<em>$2</em>');
+  html = html.replace(/(^|[^_])_(?!_)(.+?)_(?!_)/g, '$1<em>$2</em>');
+  html = html.replace(/`(.+?)`/g, '<code>$1</code>');
+  return html;
+}
+
+function renderMarkdown(raw){
+  const escaped = escapeHtml(raw || '');
+  const lines = escaped.split('\n');
+  const blocks = [];
+  let buffer = [];
+
+  function flush(){
+    if(buffer.length){
+      blocks.push(`<p>${buffer.map(inlineMarkdown).join('<br>')}</p>`);
+      buffer = [];
+    }
+  }
+
+  for(const line of lines){
+    const h3 = line.match(/^###\s+(.*)/);
+    const h2 = line.match(/^##\s+(.*)/);
+    const h1 = line.match(/^#\s+(.*)/);
+    if(h3){ flush(); blocks.push(`<h4>${inlineMarkdown(h3[1])}</h4>`); }
+    else if(h2){ flush(); blocks.push(`<h3>${inlineMarkdown(h2[1])}</h3>`); }
+    else if(h1){ flush(); blocks.push(`<h2>${inlineMarkdown(h1[1])}</h2>`); }
+    else if(line.trim() === ''){ flush(); }
+    else{ buffer.push(line); }
+  }
+  flush();
+  return blocks.join('');
 }
 function fmtDate(iso){
   try{ return new Date(iso).toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric'}); }
@@ -196,7 +249,7 @@ function renderList(){
 
 function renderDetail(article){
   const images = article.images && article.images.length ? article.images : [];
-  const bodyHtml = escapeHtml(article.body || '').split(/\n\n+/).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+  const bodyHtml = renderMarkdown(article.body);
   const exhibitsHtml = images.length ? images.map((img, i) => `
     <div class="exhibit">
       <div class="photo-frame"><img src="${img.src}" alt="${escapeHtml(img.description || article.title)}"></div>
