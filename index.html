@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Big John Wiki</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Vollkorn:ital,wght@0,400;0,600;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap');
+
+:root{
+  --paper: #e8dcb8;
+  --paper-dark: #dccb9c;
+  --ink: #2a2318;
+  --ink-soft: #4a4030;
+  --manila: #cbb27a;
+  --stamp-red: #8c2a20;
+  --folder-shadow: rgba(30,22,10,0.35);
+  --line: #b39d68;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background-color:var(--paper);
+  color:var(--ink);
+  font-family:'Vollkorn', Georgia, serif;
+  min-height:100vh;
+  padding:32px 20px 80px;
+}
+.wrap{max-width:960px;margin:0 auto;}
+.masthead{border-bottom:4px double var(--ink); padding-bottom:14px; margin-bottom:28px;}
+.masthead h1{
+  font-family:'Special Elite', 'Courier New', monospace; font-size:2.4rem; letter-spacing:1px;
+  margin:0; text-transform:uppercase;
+}
+.masthead .sub{
+  font-family:'Courier Prime', monospace; font-size:0.72rem; letter-spacing:2px;
+  text-transform:uppercase; color:var(--ink-soft); margin-top:4px;
+}
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:22px;}
+.folder{
+  background:var(--manila); border:1px solid var(--line); box-shadow:3px 4px 0 var(--folder-shadow);
+  cursor:pointer; position:relative; padding-top:14px;
+  transition:transform 0.15s ease, box-shadow 0.15s ease;
+  text-decoration:none; color:inherit; display:block;
+}
+.folder:hover{transform:translateY(-3px); box-shadow:5px 8px 0 var(--folder-shadow);}
+.folder .tab{
+  position:absolute; top:-11px; left:16px; background:var(--manila); border:1px solid var(--line); border-bottom:none;
+  font-family:'Courier Prime', monospace; font-size:0.62rem; letter-spacing:1px;
+  padding:3px 10px 5px; text-transform:uppercase; color:var(--ink-soft);
+}
+.folder .photo-frame{
+  margin:0 12px; border:1px solid var(--ink); background:#000; aspect-ratio:4/5; overflow:hidden;
+  display:flex;align-items:center;justify-content:center; position:relative;
+}
+.folder .photo-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+.folder .photo-frame .noimg{color:#8a8a8a;font-family:'Courier Prime',monospace;font-size:0.7rem;}
+.folder .photo-frame .img-count{
+  position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,0.65); color:#eee;
+  font-family:'Courier Prime',monospace; font-size:0.62rem; padding:2px 6px;
+}
+.folder .cap{padding:12px 14px 16px;}
+.folder .cap h3{margin:0 0 4px; font-family:'Special Elite','Courier New',monospace; font-size:1rem; line-height:1.3;}
+.folder .cap .meta{font-family:'Courier Prime',monospace; font-size:0.65rem; color:var(--ink-soft); letter-spacing:0.5px;}
+
+.empty-state{border:2px dashed var(--line); padding:50px 20px; text-align:center; font-family:'Courier Prime', monospace; color:var(--ink-soft);}
+.empty-state .big{font-family:'Special Elite','Courier New',monospace; font-size:1.1rem; color:var(--ink); display:block; margin-bottom:8px;}
+
+.back-link{
+  display:inline-block; font-family:'Courier Prime',monospace; font-size:0.8rem;
+  color:var(--ink-soft); text-decoration:none; margin-bottom:18px; cursor:pointer;
+  border-bottom:1px dotted var(--ink-soft);
+}
+.back-link:hover{color:var(--stamp-red); border-color:var(--stamp-red);}
+
+.dossier{background:var(--paper-dark); border:1px solid var(--line); box-shadow:4px 6px 0 var(--folder-shadow); padding:28px;}
+.dossier .case-no{
+  font-family:'Courier Prime',monospace; font-size:0.7rem; letter-spacing:2px; text-transform:uppercase;
+  color:var(--stamp-red); border:1px solid var(--stamp-red); display:inline-block; padding:3px 8px;
+  margin-bottom:14px; transform:rotate(-1deg);
+}
+.dossier h2{
+  font-family:'Special Elite','Courier New',monospace; font-size:1.9rem; margin:0 0 18px;
+  border-bottom:2px solid var(--ink); padding-bottom:10px;
+}
+.dossier-body{display:grid; grid-template-columns:280px 1fr; gap:26px;}
+@media (max-width:640px){ .dossier-body{grid-template-columns:1fr;} }
+.exhibits{display:flex; flex-direction:column; gap:22px;}
+.exhibit .photo-frame{
+  border:1px solid var(--ink); background:#000; aspect-ratio:4/5; overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.exhibit .photo-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+.exhibit .caption{
+  font-family:'Courier Prime',monospace; font-size:0.72rem; color:var(--ink-soft);
+  border-top:1px dashed var(--line); margin-top:8px; padding-top:8px; line-height:1.5;
+}
+.exhibit .caption .label{text-transform:uppercase; letter-spacing:1px; color:var(--ink); font-weight:700; display:block; margin-bottom:3px;}
+.article-body{font-size:1.05rem; line-height:1.75;}
+.article-body p{margin:0 0 1em;}
+
+.loading{font-family:'Courier Prime',monospace; color:var(--ink-soft); padding:40px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <div class="loading">Pulling the case files…</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* Read-only viewer. No editing, no local storage, no writes anywhere.
+   Reads everything from data.john sitting next to this file. */
+
+let ARTICLES = [];
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+function fmtDate(iso){
+  try{ return new Date(iso).toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric'}); }
+  catch(e){ return ''; }
+}
+
+async function loadData(){
+  const app = document.getElementById('app');
+  try{
+    const res = await fetch('data.john', {cache:'no-store'});
+    if(!res.ok) throw new Error('no data.john');
+    const zip = await JSZip.loadAsync(await res.arrayBuffer());
+    const articleFiles = Object.keys(zip.files).filter(n => n.toLowerCase().endsWith('.json') && !n.toLowerCase().endsWith('manifest.json'));
+    const articles = [];
+    for(const name of articleFiles){
+      try{
+        const text = await zip.files[name].async('string');
+        const art = JSON.parse(text);
+        if(art && art.title) articles.push(art);
+      }catch(e){ /* skip unreadable entry */ }
+    }
+    ARTICLES = articles;
+  }catch(e){
+    ARTICLES = [];
+    app.innerHTML = `
+      <div class="masthead"><h1>The Big John Wiki</h1><div class="sub">A field guide to the neighborhood's finest</div></div>
+      <div class="empty-state">
+        <span class="big">Couldn't load data.john</span>
+        Make sure data.john sits next to index.html, and that this page is being served over http(s)
+        rather than opened directly as a file — a local server (or GitHub Pages / Netlify) is enough.
+      </div>`;
+    return;
+  }
+  route();
+}
+
+function route(){
+  const hash = location.hash.slice(1);
+  if(hash){
+    const article = ARTICLES.find(a => a.id === hash);
+    if(article){ renderDetail(article); return; }
+  }
+  renderList();
+}
+window.addEventListener('hashchange', route);
+
+function renderList(){
+  const sorted = [...ARTICLES].sort((a,b)=> (b.createdAt||'').localeCompare(a.createdAt||''));
+  const cards = sorted.map((a, i) => {
+    const thumb = a.images && a.images[0] ? a.images[0].src : null;
+    const count = a.images ? a.images.length : 0;
+    return `
+    <a class="folder" href="#${a.id}">
+      <div class="tab">Case ${String(sorted.length - i).padStart(3,'0')}</div>
+      <div class="photo-frame">
+        ${thumb ? `<img src="${thumb}" alt="">` : `<span class="noimg">No photo on file</span>`}
+        ${count > 1 ? `<span class="img-count">${count} photos</span>` : ''}
+      </div>
+      <div class="cap"><h3>${escapeHtml(a.title)}</h3><div class="meta">Filed ${fmtDate(a.createdAt)}</div></div>
+    </a>`;
+  }).join('');
+
+  document.getElementById('app').innerHTML = `
+    <div class="masthead">
+      <h1>The Big John Wiki</h1>
+      <div class="sub">A field guide to the neighborhood's finest — est. ${new Date().getFullYear()}</div>
+    </div>
+    ${sorted.length === 0 ? `
+      <div class="empty-state">
+        <span class="big">No case files yet.</span>
+        Check back soon.
+      </div>
+    ` : `<div class="grid">${cards}</div>`}
+  `;
+}
+
+function renderDetail(article){
+  const images = article.images && article.images.length ? article.images : [];
+  const bodyHtml = escapeHtml(article.body || '').split(/\n\n+/).map(p=>`<p>${p.replace(/\n/g,'<br>')}</p>`).join('');
+  const exhibitsHtml = images.length ? images.map((img, i) => `
+    <div class="exhibit">
+      <div class="photo-frame"><img src="${img.src}" alt="${escapeHtml(img.description || article.title)}"></div>
+      ${img.description ? `<div class="caption"><span class="label">Exhibit ${String.fromCharCode(65+i)}</span>${escapeHtml(img.description)}</div>` : ''}
+    </div>
+  `).join('') : `<div class="exhibit"><div class="photo-frame"><span class="noimg" style="color:#8a8a8a;">No photo on file</span></div></div>`;
+
+  document.getElementById('app').innerHTML = `
+    <a class="back-link" href="#">&larr; Back to the archive</a>
+    <div class="dossier">
+      <div class="case-no">Exhibit / ${article.id}</div>
+      <h2>${escapeHtml(article.title)}</h2>
+      <div class="dossier-body">
+        <div class="exhibits">${exhibitsHtml}</div>
+        <div class="article-body">${bodyHtml || '<p style="color:var(--ink-soft)">No write-up yet.</p>'}</div>
+      </div>
+    </div>
+  `;
+}
+
+loadData();
+</script>
+</body>
+</html>
